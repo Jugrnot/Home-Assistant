@@ -1,1 +1,81 @@
+substitutions:
+    device_name: bulb1
+esphome:
+  name: ${device_name}
+  platform: ESP8266
+  board: esp01_1m
+  on_boot:
+      priority: 750
+      then:
+        - light.turn_on:
+            id: ${device_name}
+            # set white LED brightness and color balance between CW and WW
+            # this is my own preference. you should choose yours
+            color_temperature: 3300K
+            white: 40%
+  includes:
+  # contributor [displaced] developed a workaround for properly using the CW/WW LEDs by setting the RGB color to white
+   - better_rgbww_output.h
+wifi:
+  ssid: ""
+  password: ""
 
+  # Enable fallback hotspot (captive portal) in case wifi connection fails
+  ap:
+    ssid: "Bulb1 Fallback Hotspot"
+    password: ""
+
+captive_portal:
+  
+# Enable logging
+logger:
+
+# Enable Home Assistant API
+api:
+  password: ""
+
+ota:
+  password: ""
+
+# Define output pins
+sm16716:
+  data_pin: GPIO04
+  clock_pin: GPIO05
+  num_channels: 3
+  num_chips: 1
+
+output:
+  - platform: sm16716
+    id: output_red
+    channel: 2
+    power_supply: rgb_power
+  - platform: sm16716
+    id: output_green
+    channel: 1
+    power_supply: rgb_power
+  - platform: sm16716
+    id: output_blue
+    channel: 0
+    power_supply: rgb_power
+  - platform: esp8266_pwm
+    id: output_cold_white
+    pin: GPIO12
+  - platform: esp8266_pwm
+    id: output_warm_white
+    pin: GPIO14
+
+light:
+  - platform: rgbww
+    name: ${device_name}
+    id: ${device_name}
+    red: output_red
+    green: output_green
+    blue: output_blue
+    cold_white: output_cold_white
+    warm_white: output_warm_white
+    cold_white_color_temperature: 6500 K
+    warm_white_color_temperature: 2700 K
+
+power_supply:
+  - id: rgb_power
+    pin: GPIO13
